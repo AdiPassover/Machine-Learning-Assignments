@@ -6,10 +6,17 @@ class KNearestNeighbors:
         self.k = k
         self.distance_function = distance_function
 
+        self.X_train = []
+        self.y_train = []
+
 
     def train(self, X: list[tuple[float,...]], y: list[str]) -> None:
         self.X_train = X
         self.y_train = y
+
+
+    def get_data_size(self) -> int:
+        return len(self.X_train)
 
 
     def predict_query(self, x: tuple[float,...]) -> str:
@@ -26,3 +33,38 @@ class KNearestNeighbors:
 
     def predict(self, X: list[tuple[float,...]]) -> list[str]:
         return [self.predict_query(x) for x in X]
+
+
+class KNearestNeighborsCondensing(KNearestNeighbors):
+
+    def __init__(self, k: int, distance_function: Callable[[tuple, tuple], float]):
+        super().__init__(k, distance_function)
+
+
+    def train(self, X: list[tuple[float,...]], y: list[str]) -> None:
+        eps = self._get_epsilon(X, y)
+
+        self.X_train = []
+        self.y_train = []
+
+        for i in range(len(X)):
+            if self._dist(X[i], self.X_train) > eps:
+                self.X_train.append(X[i])
+                self.y_train.append(y[i])
+
+
+    def _get_epsilon(self, X: list[tuple[float,...]], y: list[str]) -> float:
+        min_dist = float('inf')
+
+        for i in range(len(X)):
+            for j in range(i + 1, len(X)):
+                if y[i] != y[j]:
+                    min_dist = min(min_dist, self.distance_function(X[i], X[j]))
+
+        return min_dist
+
+    def _dist(self, x: tuple[float,...], T: list[tuple[float,...]]) -> float:
+        min_dist = float('inf')
+        for t in T:
+            min_dist = min(min_dist, self.distance_function(x, t))
+        return min_dist
