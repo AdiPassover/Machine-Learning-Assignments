@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     condensed = True
 
-    classes = [VERSICOLOR, VIRGINICA]
+    classes = [SETOSA, VIRGINICA]
     columns = [1, 2]
 
     num_tests = 100
